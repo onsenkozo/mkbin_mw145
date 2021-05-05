@@ -151,8 +151,6 @@ namespace mkbin_mw145
                 // OR演算
                 foreach(string val in aOrParams)
                 {
-                    MethodInfo aTryParseMethod = aType.GetMethod("TryParse");
-
                     // パラメータ値
                     var aTmpValue = Activator.CreateInstance(aType);
 
@@ -162,10 +160,15 @@ namespace mkbin_mw145
                     if (aResult == null)
                     {
                         // 定数定義はない→リテラル値をチェックする
+                        MethodInfo aTryParseMethod = aType.GetMethod("TryParse");
                         aResult = aTryParseMethod.Invoke(aType, new object[] { val.Trim(), aTmpValue });
-                        if (aResult == null || (bool)aResult == false)
+                        if (aResult == null)
                         {
-                            throw new Exception(string.Format("{0}: Null Reference Excepotion", MethodBase.GetCurrentMethod().Name));
+                            throw new Exception(string.Format("{0}: Type {1} does not have a TryParse Method.", MethodBase.GetCurrentMethod().Name, aType.Name));
+                        }
+                        else if ((bool)aResult == false)
+                        {
+                            throw new Exception(string.Format("{0}: Fail to TryParse to type {1} from \"{2}\".", MethodBase.GetCurrentMethod().Name, aType.Name, val.Trim()));
                         }
                     }
 
