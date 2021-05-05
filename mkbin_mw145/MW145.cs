@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Text;
 /// <summary>
 /// 
@@ -38,6 +39,11 @@ namespace mkbin_mw145
         public const int KNJ_DOUBLE_WIDTH     = 4;
         public const int KNJ_HALF_WIDTH       = 2;
         public const int KNJ_VERTICAL_WRITING = 1;
+
+        /// <summary>
+        /// エンコーディング
+        /// </summary>
+        protected Encoding sjis = Encoding.GetEncoding("shift_jis");
 
         // ========================================================
         // 制御文字
@@ -171,7 +177,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetAnkFontSpace: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -188,7 +194,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetFontStyle: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -211,7 +217,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetAnkFontSize: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -237,7 +243,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetVerticalAbsolutePosition: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -263,7 +269,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetVerticalReativePosition: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -298,7 +304,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetPageFormat: Bad Parameter: topMargin {0:d} smaller than bottomMargin {1:d}", topMargin, bottomMargin));
+                throw new Exception(string.Format("{0}: Bad Parameter: topMargin {1:d} smaller than bottomMargin {2:d}", MethodBase.GetCurrentMethod().Name, topMargin, bottomMargin));
             }
         }
 
@@ -390,7 +396,7 @@ namespace mkbin_mw145
                 {
                     if (MinValue > val)
                     {
-                        throw new Exception(string.Format("SetVerticalTabStops: Bad Parameter Sequence: Current Value {0:d} is smaller than Previous Value {1:d}", val, MinValue));
+                        throw new Exception(string.Format("{0}: Bad Parameter Sequence: Current Value {1:d} is smaller than Previous Value {2:d}", MethodBase.GetCurrentMethod().Name, val, MinValue));
                     }
                 }
 
@@ -406,7 +412,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetVerticalTabStops: Bad Parameter Count: {0:d}", values.Length));
+                throw new Exception(string.Format("{0}: Bad Parameter Count: {1:d}", MethodBase.GetCurrentMethod().Name, values.Length));
             }
         }
 
@@ -423,7 +429,7 @@ namespace mkbin_mw145
                 {
                     if (MinValue > val)
                     {
-                        throw new Exception(string.Format("SetHorizontalTabStops: Bad Parameter Sequence: Current Value {0:d} is smaller than Previous Value {1:d}", val, MinValue));
+                        throw new Exception(string.Format("{0}: Bad Parameter Sequence: Current Value {1:d} is smaller than Previous Value {2:d}", MethodBase.GetCurrentMethod().Name, val, MinValue));
                     }
                 }
 
@@ -439,7 +445,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetHorizontalTabStops: Bad Parameter Count: {0:d}", values.Length));
+                throw new Exception(string.Format("{0}: Bad Parameter Count: {1:d}", MethodBase.GetCurrentMethod().Name, values.Length));
             }
         }
 
@@ -494,7 +500,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("FeedPaper: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -559,7 +565,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetAnkFontSize: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -582,7 +588,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetHorizontalReativePosition: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -601,7 +607,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetAlignment: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -688,7 +694,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("PrintPreDownloadedData: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -717,7 +723,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("ChangeCommandMode: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -769,15 +775,14 @@ namespace mkbin_mw145
         /// <param name="char2"></param>
         protected void Print2HalfAs1FullWidth(char char1, char char2)
         {
-            var sjis = Encoding.GetEncoding("shift_jis");
             byte[] sjis1 = sjis.GetBytes(char1.ToString());
             byte[] sjis2 = sjis.GetBytes(char2.ToString());
 
-            byte llb = 0x00;
-            byte lhb = 0x00;
+            byte llb;
+            byte lhb;
 
-            byte rlb = 0x00;
-            byte rhb = 0x00;
+            byte rlb;
+            byte rhb;
 
             if (sjis1.Length < 2)
             {
@@ -860,11 +865,11 @@ namespace mkbin_mw145
         {
             if (left < 0 || 128 <= left)
             {
-                throw new Exception(string.Format("SetHalfWidthSpacing: Bad Parameter: left {0:d}", left));
+                throw new Exception(string.Format("{0}: Bad Parameter: left {1:d}", MethodBase.GetCurrentMethod().Name, left));
             }
             else if (left < 0 || 128 <= left)
             {
-                throw new Exception(string.Format("SetHalfWidthSpacing: Bad Parameter: right {0:d}", right));
+                throw new Exception(string.Format("{0}: Bad Parameter: right {1:d}", MethodBase.GetCurrentMethod().Name, right));
             }
             else
             {
@@ -958,7 +963,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetKanjiFontSize: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -996,7 +1001,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetKaniUnderline: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -1013,7 +1018,7 @@ namespace mkbin_mw145
             }
             else
             {
-                throw new Exception(string.Format("SetKanjiFontStyle: Bad Parameter: {0:d}", value));
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
             }
         }
 
@@ -1051,6 +1056,20 @@ namespace mkbin_mw145
         {
             binaryWriter.Write((byte)0x1c);
             binaryWriter.Write((byte)0x14);
+        }
+
+        /// <summary>
+        /// 一文字出力
+        /// </summary>
+        /// <param name="char1"></param>
+        protected override void EmitChar(char char1)
+        {
+            byte[] sjis1 = sjis.GetBytes(char1.ToString());
+
+            foreach (byte aByte in sjis1)
+            {
+                binaryWriter.Write(aByte);
+            }
         }
     }
 }
