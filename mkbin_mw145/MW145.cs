@@ -20,6 +20,7 @@ namespace mkbin_mw145
             : base(inputFileName, outputFileName)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            sjis = Encoding.GetEncoding("shift_jis");
         }
 
         // ========================================================
@@ -46,7 +47,7 @@ namespace mkbin_mw145
         /// <summary>
         /// エンコーディング
         /// </summary>
-        protected Encoding sjis = Encoding.GetEncoding("shift_jis");
+        protected Encoding sjis;
 
         // ========================================================
         // 制御文字
