@@ -123,6 +123,7 @@ namespace mkbin_mw145
                             // コマンド部終了
                             aParamStrs.Clear();
                             ExecCommand();
+                            execState = State.PASS_THROUGH;
                         }
                         else if (char1 == '(')
                         {
@@ -152,6 +153,7 @@ namespace mkbin_mw145
                             aParamStrs.Add(aParamStr);
                             aParamStr = "";
                             ExecCommand();
+                            execState = State.PASS_THROUGH;
                         }
                         else
                         {
