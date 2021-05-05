@@ -135,6 +135,7 @@ namespace mkbin_mw145
         {
             MethodInfo aMethod = this.GetType().GetMethod(aCommandStr);
             ParameterInfo[] aParams = aMethod.GetParameters();
+            object[] aMethodParams = new object[aParams.Length];
 
             // パラメータの構築
             for(int idx = 0; idx < aParams.Length; idx++)
@@ -156,22 +157,34 @@ namespace mkbin_mw145
                     var aTmpValue = Activator.CreateInstance(aType);
 
                     // 定数定義をチェックする
-
-                    // リテラル値をチェックする
-                    var aResult = aTryParseMethod.Invoke(aType, new object[] { val.Trim(), aTmpValue });
-                    if (aResult != null && (bool)aResult == true)
+                    FieldInfo aFieldInfo = this.GetType().GetField(val.Trim());
+                    var aResult = aFieldInfo.GetValue(this);
+                    if (aResult == null)
                     {
-                        MethodInfo aOrMethod = aType.GetMethod("op_BitwiseOr");
-
-                        // パラメータを変換できた
-                        aParamValue = aOrMethod.Invoke(aParamValue, new object[] { aParamValue, aTmpValue });
-
+                        // 定数定義はない→リテラル値をチェックする
+                        aResult = aTryParseMethod.Invoke(aType, new object[] { val.Trim(), aTmpValue });
+                        if (aResult == null || (bool)aResult == false)
+                        {
+                            throw new Exception(string.Format("{0}: Null Reference Excepotion", MethodBase.GetCurrentMethod().Name));
+                        }
                     }
+
+                    // 算術ORオペレータ
+                    MethodInfo aOrMethod = aType.GetMethod("op_BitwiseOr");
+                    if (aOrMethod == null)
+                    {
+                        throw new Exception(string.Format("{0}: Type {1} does not have a BitwiseOR(|) Operator.", MethodBase.GetCurrentMethod().Name, aType.Name));
+                    }
+
+                    // パラメータを変換できた
+                    aParamValue = aOrMethod.Invoke(aParamValue, new object[] { aParamValue, aTmpValue });
                 }
 
-
-
+                aMethodParams[idx] = aParamValue;
             }
+
+            // コマンド実行
+            aMethod.Invoke(this, aMethodParams);
 
             return null;
         }
