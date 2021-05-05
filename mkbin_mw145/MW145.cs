@@ -14,7 +14,10 @@ namespace mkbin_mw145
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public MW145()
+        /// <param name="inputFileName"></param>
+        /// <param name="outputFileName"></param>
+        public MW145(string inputFileName, string outputFileName)
+            : base(inputFileName, outputFileName)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }

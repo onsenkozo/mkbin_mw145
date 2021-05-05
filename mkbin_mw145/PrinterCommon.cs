@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -48,9 +49,42 @@ namespace mkbin_mw145
         protected string aCommandStr = "";
 
         /// <summary>
+        /// パラメータ文字列配列保持
+        /// </summary>
+        protected List<string> aParamStrs;
+
+        /// <summary>
         /// パラメータ文字列保持
         /// </summary>
-        protected string[] aParamStrs;
+        protected string aParamStr;
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="inputFileName"></param>
+        /// <param name="outputFileName"></param>
+        public PrinterCommon(string inputFileName, string outputFileName)
+        {
+            fileReader = new StreamReader(inputFileName);
+            binaryWriter = new BinaryWriter(File.Open(outputFileName, FileMode.Create));
+        }
+
+        /// <summary>
+        /// デストラクタ
+        /// </summary>
+        ~PrinterCommon()
+        {
+            if (binaryWriter != null)
+            {
+                binaryWriter.Close();
+                binaryWriter = null;
+            }
+            if (fileReader != null)
+            {
+                fileReader.Close();
+                fileReader = null;
+            }
+        }
 
         /// <summary>
         /// 一文字ずつ処理する
@@ -87,12 +121,15 @@ namespace mkbin_mw145
                         else if (char1 == ';')
                         {
                             // コマンド部終了
+                            aParamStrs.Clear();
+                            ExecCommand();
                         }
                         else if (char1 == '(')
                         {
                             // コマンド・パラメータ部開始
                             execState = State.PARAMATERS;
-
+                            aParamStrs.Clear();
+                            aParamStr = "";
                         }
                         else
                         {
@@ -106,17 +143,20 @@ namespace mkbin_mw145
                         if (char1 == ',')
                         {
                             // コマンド・パラメータ部、次パラメータ開始
-
-                        }
-                        else if (char1 == '|')
-                        {
-                            // コマンド・パラメータ部、OR演算
-
+                            aParamStrs.Add(aParamStr);
+                            aParamStr = "";
                         }
                         else if (char1 == ')')
                         {
                             // コマンド・パラメータ部終了（コマンド部終了）
-
+                            aParamStrs.Add(aParamStr);
+                            aParamStr = "";
+                            ExecCommand();
+                        }
+                        else
+                        {
+                            // パラメータ文字列に追加
+                            aParamStr += char1;
                         }
                         break;
 
@@ -130,8 +170,7 @@ namespace mkbin_mw145
         /// <summary>
         /// コマンド実行
         /// </summary>
-        /// <returns></returns>
-        protected MethodInfo ExecCommand()
+        protected void ExecCommand()
         {
             MethodInfo aMethod = this.GetType().GetMethod(aCommandStr);
             ParameterInfo[] aParams = aMethod.GetParameters();
@@ -188,8 +227,6 @@ namespace mkbin_mw145
 
             // コマンド実行
             aMethod.Invoke(this, aMethodParams);
-
-            return null;
         }
 
         /// <summary>
