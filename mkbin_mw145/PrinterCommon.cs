@@ -56,7 +56,7 @@ namespace mkbin_mw145
         /// <summary>
         /// パラメータ文字列配列保持
         /// </summary>
-        protected List<string> aParamStrs;
+        protected List<string> aParamStrs = new List<string>();
 
         /// <summary>
         /// パラメータ文字列保持
@@ -122,6 +122,7 @@ namespace mkbin_mw145
                                 aParamStrs.Clear();
                                 ExecCommand();
                                 execState = State.PASS_THROUGH;
+                                aCommandStr = "";
                             }
                             else if (char1 == '(')
                             {
@@ -133,7 +134,7 @@ namespace mkbin_mw145
                             else
                             {
                                 // コマンド文字列に追加
-                                aCommandStr += char1;
+                                aCommandStr += (char)char1;
                             }
                             aEscapeState = false;
                             break;
@@ -152,11 +153,12 @@ namespace mkbin_mw145
                                 aParamStr = "";
                                 ExecCommand();
                                 execState = State.PASS_THROUGH;
+                                aCommandStr = "";
                             }
                             else
                             {
                                 // パラメータ文字列に追加
-                                aParamStr += char1;
+                                aParamStr += (char)char1;
                             }
                             break;
 
@@ -178,8 +180,17 @@ namespace mkbin_mw145
         /// </summary>
         protected void ExecCommand()
         {
-            MethodInfo aMethod = this.GetType().GetMethod(aCommandStr);
+            MethodInfo aMethod = this.GetType().GetMethod(aCommandStr, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (aMethod == null)
+            {
+                throw new Exception();
+            }
             ParameterInfo[] aParams = aMethod.GetParameters();
+            if (aParams == null)
+            {
+                throw new Exception();
+            }
+
             object[] aMethodParams = new object[aParams.Length];
 
             // パラメータの構築
@@ -200,18 +211,21 @@ namespace mkbin_mw145
                     var aTmpValue = Activator.CreateInstance(aType);
 
                     // 定数定義をチェックする
-                    FieldInfo aFieldInfo = this.GetType().GetField(val.Trim());
-                    var aResult = aFieldInfo.GetValue(this);
-                    if (aResult == null)
+                    FieldInfo aFieldInfo = this.GetType().GetField(val.Trim(), BindingFlags.Instance | BindingFlags.NonPublic);
+                    if (aFieldInfo != null)
+                    {
+                        aTmpValue = aFieldInfo.GetValue(this);
+                    }
+                    else
                     {
                         // 定数定義はない→リテラル値をチェックする
                         MethodInfo aTryParseMethod = aType.GetMethod("TryParse");
-                        aResult = aTryParseMethod.Invoke(aType, new object[] { val.Trim(), aTmpValue });
-                        if (aResult == null)
+                        if (aTryParseMethod == null)
                         {
                             throw new Exception(string.Format("{0}: Type {1} does not have a TryParse Method.", MethodBase.GetCurrentMethod().Name, aType.Name));
                         }
-                        else if ((bool)aResult == false)
+                        var aResult = aTryParseMethod.Invoke(aType, new object[] { val.Trim(), aTmpValue });
+                        if ((bool)aResult == false)
                         {
                             throw new Exception(string.Format("{0}: Fail to TryParse to type {1} from \"{2}\".", MethodBase.GetCurrentMethod().Name, aType.Name, val.Trim()));
                         }
