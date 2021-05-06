@@ -16,12 +16,17 @@ namespace mkbin_mw145
         /// <summary>
         /// 
         /// </summary>
+        protected string outputFileName;
+
+        /// <summary>
+        /// 
+        /// </summary>
         protected BinaryWriter binaryWriter;
 
         /// <summary>
         /// 
         /// </summary>
-        protected StreamReader fileReader;
+        protected string inputFileName;
 
         /// <summary>
         /// 実行ステート区分
@@ -65,8 +70,8 @@ namespace mkbin_mw145
         /// <param name="outputFileName"></param>
         public PrinterCommon(string inputFileName, string outputFileName)
         {
-            fileReader = new StreamReader(inputFileName);
-            binaryWriter = new BinaryWriter(File.Open(outputFileName, FileMode.Create));
+            this.inputFileName = inputFileName;
+            this.outputFileName = outputFileName;
         }
 
         /// <summary>
@@ -74,16 +79,6 @@ namespace mkbin_mw145
         /// </summary>
         ~PrinterCommon()
         {
-            if (binaryWriter != null)
-            {
-                binaryWriter.Close();
-                binaryWriter = null;
-            }
-            if (fileReader != null)
-            {
-                fileReader.Close();
-                fileReader = null;
-            }
         }
 
         /// <summary>
@@ -92,80 +87,89 @@ namespace mkbin_mw145
         /// <returns></returns>
         public void Exec()
         {
-            int char1;
-            while ((char1 = fileReader.Read()) != -1)
+            try
             {
-                switch (execState)
+                using StreamReader sr = new StreamReader(inputFileName);
+                int char1;
+                while ((char1 = sr.Read()) != -1)
                 {
-                    case State.PASS_THROUGH:    // パススルー状態
-                        if (char1 == '\\')
-                        {
-                            // コマンド部開始（またはバックスラッシュ）
-                            aEscapeState = true;
-                            execState = State.COMMAND;
-                        }
-                        else
-                        {
-                            // 一文字出力
-                            EmitChar((char)char1);
-                        }
-                        break;
+                    switch (execState)
+                    {
+                        case State.PASS_THROUGH:    // パススルー状態
+                            if (char1 == '\\')
+                            {
+                                // コマンド部開始（またはバックスラッシュ）
+                                aEscapeState = true;
+                                execState = State.COMMAND;
+                            }
+                            else
+                            {
+                                // 一文字出力
+                                EmitChar((char)char1);
+                            }
+                            break;
 
-                    case State.COMMAND:
-                        if (char1 == '\\' && aEscapeState == true)
-                        {
-                            // バックスラッシュ（コマンド部の開始ではない）
-                            execState = State.PASS_THROUGH;
-                            binaryWriter.Write('\\');
-                        }
-                        else if (char1 == ';')
-                        {
-                            // コマンド部終了
-                            aParamStrs.Clear();
-                            ExecCommand();
-                            execState = State.PASS_THROUGH;
-                        }
-                        else if (char1 == '(')
-                        {
-                            // コマンド・パラメータ部開始
-                            execState = State.PARAMATERS;
-                            aParamStrs.Clear();
-                            aParamStr = "";
-                        }
-                        else
-                        {
-                            // コマンド文字列に追加
-                            aCommandStr += char1;
-                        }
-                        aEscapeState = false;
-                        break;
+                        case State.COMMAND:
+                            if (char1 == '\\' && aEscapeState == true)
+                            {
+                                // バックスラッシュ（コマンド部の開始ではない）
+                                execState = State.PASS_THROUGH;
+                                EmitChar('\\');
+                            }
+                            else if (char1 == ';')
+                            {
+                                // コマンド部終了
+                                aParamStrs.Clear();
+                                ExecCommand();
+                                execState = State.PASS_THROUGH;
+                            }
+                            else if (char1 == '(')
+                            {
+                                // コマンド・パラメータ部開始
+                                execState = State.PARAMATERS;
+                                aParamStrs.Clear();
+                                aParamStr = "";
+                            }
+                            else
+                            {
+                                // コマンド文字列に追加
+                                aCommandStr += char1;
+                            }
+                            aEscapeState = false;
+                            break;
 
-                    case State.PARAMATERS:
-                        if (char1 == ',')
-                        {
-                            // コマンド・パラメータ部、次パラメータ開始
-                            aParamStrs.Add(aParamStr);
-                            aParamStr = "";
-                        }
-                        else if (char1 == ')')
-                        {
-                            // コマンド・パラメータ部終了（コマンド部終了）
-                            aParamStrs.Add(aParamStr);
-                            aParamStr = "";
-                            ExecCommand();
-                            execState = State.PASS_THROUGH;
-                        }
-                        else
-                        {
-                            // パラメータ文字列に追加
-                            aParamStr += char1;
-                        }
-                        break;
+                        case State.PARAMATERS:
+                            if (char1 == ',')
+                            {
+                                // コマンド・パラメータ部、次パラメータ開始
+                                aParamStrs.Add(aParamStr);
+                                aParamStr = "";
+                            }
+                            else if (char1 == ')')
+                            {
+                                // コマンド・パラメータ部終了（コマンド部終了）
+                                aParamStrs.Add(aParamStr);
+                                aParamStr = "";
+                                ExecCommand();
+                                execState = State.PASS_THROUGH;
+                            }
+                            else
+                            {
+                                // パラメータ文字列に追加
+                                aParamStr += char1;
+                            }
+                            break;
 
-                    default:
-                        aEscapeState = false;
-                        break;
+                        default:
+                            aEscapeState = false;
+                            break;
+                    }
                 }
+
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
             }
         }
 

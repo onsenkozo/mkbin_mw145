@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Text;
 /// <summary>
@@ -21,6 +22,20 @@ namespace mkbin_mw145
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             sjis = Encoding.GetEncoding("shift_jis");
+            binaryWriter = new BinaryWriter(File.Open(outputFileName, FileMode.Create, FileAccess.Write), sjis);
+        }
+
+        /// <summary>
+        /// デストラクタ
+        /// </summary>
+        ~MW145()
+        {
+            if (binaryWriter != null)
+            {
+                binaryWriter.Flush();
+                binaryWriter.Close();
+                binaryWriter = null;
+            }
         }
 
         // ========================================================

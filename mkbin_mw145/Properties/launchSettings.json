@@ -3,7 +3,7 @@
     "mkbin_mw145": {
       "commandName": "Project",
       "commandLineArgs": "testinput.txt testoutput.bin",
-      "workingDirectory": "C:\\Users\\Public\\Documents"
+      "workingDirectory": "C:\\Users\\masamic\\Documents"
     }
   }
 }
