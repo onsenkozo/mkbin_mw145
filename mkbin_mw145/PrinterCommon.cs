@@ -219,27 +219,41 @@ namespace mkbin_mw145
                     else
                     {
                         // 定数定義はない→リテラル値をチェックする
-                        MethodInfo aTryParseMethod = aType.GetMethod("TryParse");
+                        MethodInfo aTryParseMethod = aType.GetMethod("TryParse", new Type[] { typeof(System.String), aType.MakeByRefType() });
                         if (aTryParseMethod == null)
                         {
                             throw new Exception(string.Format("{0}: Type {1} does not have a TryParse Method.", MethodBase.GetCurrentMethod().Name, aType.Name));
                         }
-                        var aResult = aTryParseMethod.Invoke(aType, new object[] { val.Trim(), aTmpValue });
-                        if ((bool)aResult == false)
+                        object[] args = { val.Trim(), null };
+                        var aResult = (bool)aTryParseMethod.Invoke(null, args);
+                        if (aResult == false)
                         {
                             throw new Exception(string.Format("{0}: Fail to TryParse to type {1} from \"{2}\".", MethodBase.GetCurrentMethod().Name, aType.Name, val.Trim()));
                         }
+                        aTmpValue = args[1];
                     }
 
-                    // 算術ORオペレータ
-                    MethodInfo aOrMethod = aType.GetMethod("op_BitwiseOr");
-                    if (aOrMethod == null)
+                    switch (aType.Name)
                     {
-                        throw new Exception(string.Format("{0}: Type {1} does not have a BitwiseOR(|) Operator.", MethodBase.GetCurrentMethod().Name, aType.Name));
-                    }
+                        case "Int64":
+                            aParamValue = (Int64)aParamValue | (Int64)aTmpValue;
+                            break;
+                        case "Int32":
+                            aParamValue = (Int32)aParamValue | (Int32)aTmpValue;
+                            break;
+                        case "Int16":
+                            aParamValue = (Int16)aParamValue | (Int16)aTmpValue;
+                            break;
+                        case "Byte":
+                            aParamValue = (Byte)aParamValue | (Byte)aTmpValue;
+                            break;
+                        case "Boolean":
+                            aParamValue = (Boolean)aParamValue | (Boolean)aTmpValue;
+                            break;
+                        default:
+                            throw new Exception(string.Format("{0}: Type {1} does not have a BitwiseOR(|) Operator.", MethodBase.GetCurrentMethod().Name, aType.Name));
 
-                    // パラメータを変換できた
-                    aParamValue = aOrMethod.Invoke(aParamValue, new object[] { aParamValue, aTmpValue });
+                    }
                 }
 
                 aMethodParams[idx] = aParamValue;
