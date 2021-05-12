@@ -29,13 +29,24 @@ namespace mkbin_mw145
         protected string inputFileName;
 
         /// <summary>
+        /// 入力ライン番号
+        /// </summary>
+        protected int lineNo = 0;
+
+        /// <summary>
+        /// 入力文字位置
+        /// </summary>
+        protected int columnNo = 0;
+
+        /// <summary>
         /// 実行ステート区分
         /// </summary>
         protected enum State
         {
-            PASS_THROUGH,   // パススルー部
-            COMMAND,        // コマンド部
-            PARAMATERS,     // パラメーター部
+            PASS_THROUGH,       // パススルー部
+            CARRIAGE_RETURN,    // キャリッジ・リターン（復帰）
+            COMMAND,            // コマンド部
+            PARAMATERS,         // パラメーター部
         }
 
         /// <summary>
@@ -102,10 +113,44 @@ namespace mkbin_mw145
                                 aEscapeState = true;
                                 execState = State.COMMAND;
                             }
+                            else if (char1 == '\x0d')
+                            {
+                                // CR（復帰）
+                                execState = State.CARRIAGE_RETURN; ;
+                            }
+                            else if (char1 == '\x0a')
+                            {
+                                // LF（改行）
+                            }
                             else
                             {
                                 // 一文字出力
                                 EmitChar((char)char1);
+                            }
+                            break;
+
+                        case State.CARRIAGE_RETURN:    // キャリッジ・リターン（復帰）
+                            if (char1 == '\\')
+                            {
+                                // コマンド部開始（またはバックスラッシュ）
+                                aEscapeState = true;
+                                execState = State.COMMAND;
+                            }
+                            else if (char1 == '\x0d')
+                            {
+                                // CR（復帰）
+                                execState = State.CARRIAGE_RETURN;
+                            }
+                            else if (char1 == '\x0a')
+                            {
+                                // LF（改行）
+                                execState = State.PASS_THROUGH;
+                            }
+                            else
+                            {
+                                // 一文字出力
+                                EmitChar((char)char1);
+                                execState = State.PASS_THROUGH;
                             }
                             break;
 
