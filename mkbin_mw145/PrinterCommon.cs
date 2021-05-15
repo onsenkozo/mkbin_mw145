@@ -45,6 +45,7 @@ namespace mkbin_mw145
         {
             PASS_THROUGH,       // パススルー部
             CARRIAGE_RETURN,    // キャリッジ・リターン（復帰）
+            COMMENT,            // コメント部
             COMMAND,            // コマンド部
             PARAMATERS,         // パラメーター部
         }
@@ -67,7 +68,7 @@ namespace mkbin_mw145
         /// <summary>
         /// パラメータ文字列配列保持
         /// </summary>
-        protected List<string> aParamStrs = new List<string>();
+        protected List<string> aParamStrs = new();
 
         /// <summary>
         /// パラメータ文字列保持
@@ -113,10 +114,15 @@ namespace mkbin_mw145
                                 aEscapeState = true;
                                 execState = State.COMMAND;
                             }
+                            else if (char1 == '#')
+                            {
+                                // コメント開始
+                                execState = State.COMMENT;
+                            }
                             else if (char1 == '\x0d')
                             {
                                 // CR（復帰）
-                                execState = State.CARRIAGE_RETURN; ;
+                                execState = State.CARRIAGE_RETURN;
                             }
                             else if (char1 == '\x0a')
                             {
@@ -154,12 +160,31 @@ namespace mkbin_mw145
                             }
                             break;
 
+                        case State.COMMENT:    // コメント
+                            if (char1 == '\x0d')
+                            {
+                                // CR（復帰）
+                                execState = State.CARRIAGE_RETURN;
+                            }
+                            else if (char1 == '\x0a')
+                            {
+                                // LF（改行）
+                                execState = State.PASS_THROUGH;
+                            }
+                            break;
+
                         case State.COMMAND:
                             if (char1 == '\\' && aEscapeState == true)
                             {
                                 // バックスラッシュ（コマンド部の開始ではない）
                                 execState = State.PASS_THROUGH;
                                 EmitChar('\\');
+                            }
+                            else if (char1 == '#' && aEscapeState == true)
+                            {
+                                // ナンバーサイン（コマンド部の開始ではない）
+                                execState = State.PASS_THROUGH;
+                                EmitChar('#');
                             }
                             else if (char1 == ';')
                             {
