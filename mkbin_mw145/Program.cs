@@ -14,7 +14,7 @@ namespace mkbin_mw145
         {
             if (args.Length > 1)
             {
-                PrinterCommon aPrinter = new MW145(args[0], args[1]);
+                using PrinterCommon aPrinter = new MW145(args[0], args[1]);
                 aPrinter.Exec();
             }
             else

@@ -1130,5 +1130,18 @@ namespace mkbin_mw145
 
             return retColumns;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override void Dispose()
+        {
+            if (binaryWriter != null)
+            {
+                binaryWriter.Flush();
+                binaryWriter.Close();
+                binaryWriter = null;
+            }
+        }
     }
 }

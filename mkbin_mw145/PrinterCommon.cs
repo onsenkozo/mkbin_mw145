@@ -11,7 +11,7 @@ namespace mkbin_mw145
     /// <summary>
     /// 
     /// </summary>
-    abstract class PrinterCommon
+    abstract class PrinterCommon : IDisposable
     {
         /// <summary>
         /// 
@@ -363,5 +363,10 @@ namespace mkbin_mw145
         /// <param name="char1"></param>
         /// <returns>Additional Columns</returns>
         protected abstract int CountChar(char char1);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public abstract void Dispose();
     }
 }
