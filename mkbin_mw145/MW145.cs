@@ -226,7 +226,7 @@ namespace mkbin_mw145
             if (0 <= value &&
                 value < 1180)
             {
-                byte lb = (byte)(value % 255);
+                byte lb = (byte)(value % 256);
                 byte hb = (byte)(value / 256);
 
                 binaryWriter.Write((byte)0x1b);
@@ -249,7 +249,7 @@ namespace mkbin_mw145
             if (0 <= value &&
                 value < 1180)
             {
-                byte lb = (byte)(value % 255);
+                byte lb = (byte)(value % 256);
                 byte hb = (byte)(value / 256);
 
                 binaryWriter.Write((byte)0x1b);
@@ -275,7 +275,7 @@ namespace mkbin_mw145
             if (0 <= value &&
                 value < 1180)
             {
-                byte lb = (byte)(value % 255);
+                byte lb = (byte)(value % 256);
                 byte hb = (byte)(value / 256);
 
                 binaryWriter.Write((byte)0x1b);
@@ -305,10 +305,10 @@ namespace mkbin_mw145
                 bottomMargin < 1180 &&
                 topMargin < bottomMargin)
             {
-                byte tlb = (byte)(topMargin % 255);
+                byte tlb = (byte)(topMargin % 256);
                 byte thb = (byte)(topMargin / 256);
 
-                byte blb = (byte)(bottomMargin % 255);
+                byte blb = (byte)(bottomMargin % 256);
                 byte bhb = (byte)(bottomMargin / 256);
 
                 binaryWriter.Write((byte)0x1b);
@@ -573,7 +573,7 @@ namespace mkbin_mw145
                 value == 367 ||
                 value == 400)
             {
-                byte lb = (byte)(value % 255);
+                byte lb = (byte)(value % 256);
                 byte hb = (byte)(value / 256);
 
                 binaryWriter.Write((byte)0x1b);
@@ -597,7 +597,7 @@ namespace mkbin_mw145
             if (0 <= value &&
                 value < 1180)
             {
-                byte lb = (byte)(value % 255);
+                byte lb = (byte)(value % 256);
                 byte hb = (byte)(value / 256);
 
                 binaryWriter.Write((byte)0x1b);
@@ -622,6 +622,23 @@ namespace mkbin_mw145
             {
                 binaryWriter.Write((byte)0x1b);
                 binaryWriter.Write((byte)0x61);
+                binaryWriter.Write((byte)value);
+            }
+            else
+            {
+                throw new Exception(string.Format("{0}: Bad Parameter: {1:d}", MethodBase.GetCurrentMethod().Name, value));
+            }
+        }
+
+        /// <summary>
+        /// 書体選択
+        /// </summary>
+        protected void SetFontType(int value)
+        {
+            if (0 == value && 8 == value)
+            {
+                binaryWriter.Write((byte)0x1b);
+                binaryWriter.Write((byte)0x6b);
                 binaryWriter.Write((byte)value);
             }
             else
@@ -924,7 +941,7 @@ namespace mkbin_mw145
         protected void SetDoubleWidthAndHeightFont(bool value)
         {
             binaryWriter.Write((byte)0x1c);
-            binaryWriter.Write((byte)0x55);
+            binaryWriter.Write((byte)0x57);
 
             if (value)
             {
@@ -968,7 +985,7 @@ namespace mkbin_mw145
                 value == 367 ||
                 value == 400)
             {
-                byte lb = (byte)(value % 255);
+                byte lb = (byte)(value % 256);
                 byte hb = (byte)(value / 256);
 
                 binaryWriter.Write((byte)0x1c);
