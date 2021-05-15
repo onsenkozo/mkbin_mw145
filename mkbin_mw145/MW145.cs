@@ -1098,14 +1098,37 @@ namespace mkbin_mw145
         /// 一文字出力
         /// </summary>
         /// <param name="char1"></param>
-        protected override void EmitChar(char char1)
+        /// <returns>Additional Columns</returns>
+        protected override int EmitChar(char char1)
         {
+            int retColumns = 0;
             byte[] sjis1 = sjis.GetBytes(char1.ToString());
 
             foreach (byte aByte in sjis1)
             {
+                retColumns++;
                 binaryWriter.Write(aByte);
             }
+
+            return retColumns;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="char1"></param>
+        /// <returns>Additional Columns</returns>
+        protected override int CountChar(char char1)
+        {
+            int retColumns = 0;
+            byte[] sjis1 = sjis.GetBytes(char1.ToString());
+
+            foreach (byte aByte in sjis1)
+            {
+                retColumns++;
+            }
+
+            return retColumns;
         }
     }
 }

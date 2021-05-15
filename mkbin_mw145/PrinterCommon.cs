@@ -87,13 +87,6 @@ namespace mkbin_mw145
         }
 
         /// <summary>
-        /// デストラクタ
-        /// </summary>
-        ~PrinterCommon()
-        {
-        }
-
-        /// <summary>
         /// 一文字ずつ処理する
         /// </summary>
         /// <returns></returns>
@@ -101,10 +94,15 @@ namespace mkbin_mw145
         {
             try
             {
-                using StreamReader sr = new StreamReader(inputFileName);
+                using StreamReader sr = new(inputFileName);
                 int char1;
                 while ((char1 = sr.Read()) != -1)
                 {
+                    if (lineNo == 0)
+                    {
+                        lineNo = 1;
+                    }
+
                     switch (execState)
                     {
                         case State.PASS_THROUGH:    // パススルー状態
@@ -113,25 +111,31 @@ namespace mkbin_mw145
                                 // コマンド部開始（またはバックスラッシュ）
                                 aEscapeState = true;
                                 execState = State.COMMAND;
+                                columnNo++;
                             }
                             else if (char1 == '#')
                             {
                                 // コメント開始
                                 execState = State.COMMENT;
+                                columnNo++;
                             }
                             else if (char1 == '\x0d')
                             {
                                 // CR（復帰）
                                 execState = State.CARRIAGE_RETURN;
+                                columnNo = 0;
+                                lineNo++;
                             }
                             else if (char1 == '\x0a')
                             {
                                 // LF（改行）
+                                columnNo = 0;
+                                lineNo++;
                             }
                             else
                             {
                                 // 一文字出力
-                                EmitChar((char)char1);
+                                columnNo += EmitChar((char)char1);
                             }
                             break;
 
@@ -141,11 +145,14 @@ namespace mkbin_mw145
                                 // コマンド部開始（またはバックスラッシュ）
                                 aEscapeState = true;
                                 execState = State.COMMAND;
+                                columnNo++;
                             }
                             else if (char1 == '\x0d')
                             {
                                 // CR（復帰）
                                 execState = State.CARRIAGE_RETURN;
+                                columnNo = 0;
+                                lineNo++;
                             }
                             else if (char1 == '\x0a')
                             {
@@ -155,7 +162,7 @@ namespace mkbin_mw145
                             else
                             {
                                 // 一文字出力
-                                EmitChar((char)char1);
+                                columnNo += EmitChar((char)char1);
                                 execState = State.PASS_THROUGH;
                             }
                             break;
@@ -165,11 +172,15 @@ namespace mkbin_mw145
                             {
                                 // CR（復帰）
                                 execState = State.CARRIAGE_RETURN;
+                                columnNo = 0;
+                                lineNo++;
                             }
                             else if (char1 == '\x0a')
                             {
                                 // LF（改行）
                                 execState = State.PASS_THROUGH;
+                                columnNo = 0;
+                                lineNo++;
                             }
                             break;
 
@@ -178,17 +189,18 @@ namespace mkbin_mw145
                             {
                                 // バックスラッシュ（コマンド部の開始ではない）
                                 execState = State.PASS_THROUGH;
-                                EmitChar('\\');
+                                columnNo += EmitChar('\\');
                             }
                             else if (char1 == '#' && aEscapeState == true)
                             {
                                 // ナンバーサイン（コマンド部の開始ではない）
                                 execState = State.PASS_THROUGH;
-                                EmitChar('#');
+                                columnNo += EmitChar('#');
                             }
                             else if (char1 == ';')
                             {
                                 // コマンド部終了
+                                columnNo++;
                                 aParamStrs.Clear();
                                 ExecCommand();
                                 execState = State.PASS_THROUGH;
@@ -197,6 +209,7 @@ namespace mkbin_mw145
                             else if (char1 == '(')
                             {
                                 // コマンド・パラメータ部開始
+                                columnNo++;
                                 execState = State.PARAMATERS;
                                 aParamStrs.Clear();
                                 aParamStr = "";
@@ -205,6 +218,7 @@ namespace mkbin_mw145
                             {
                                 // コマンド文字列に追加
                                 aCommandStr += (char)char1;
+                                columnNo++;
                             }
                             aEscapeState = false;
                             break;
@@ -215,12 +229,14 @@ namespace mkbin_mw145
                                 // コマンド・パラメータ部、次パラメータ開始
                                 aParamStrs.Add(aParamStr);
                                 aParamStr = "";
+                                columnNo++;
                             }
                             else if (char1 == ')')
                             {
                                 // コマンド・パラメータ部終了（コマンド部終了）
                                 aParamStrs.Add(aParamStr);
                                 aParamStr = "";
+                                columnNo++;
                                 ExecCommand();
                                 execState = State.PASS_THROUGH;
                                 aCommandStr = "";
@@ -229,6 +245,7 @@ namespace mkbin_mw145
                             {
                                 // パラメータ文字列に追加
                                 aParamStr += (char)char1;
+                                columnNo += CountChar((char)char1);
                             }
                             break;
 
@@ -241,7 +258,7 @@ namespace mkbin_mw145
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e.Message);
+                Console.Error.WriteLine(string.Format("L{0:d} C{1:d} {2}", lineNo, columnNo, e.Message));
             }
         }
 
@@ -337,6 +354,14 @@ namespace mkbin_mw145
         /// 一文字出力
         /// </summary>
         /// <param name="char1"></param>
-        protected abstract void EmitChar(char char1);
+        /// <returns>Additional Columns</returns>
+        protected abstract int EmitChar(char char1);
+
+        /// <summary>
+        /// 一文字出力
+        /// </summary>
+        /// <param name="char1"></param>
+        /// <returns>Additional Columns</returns>
+        protected abstract int CountChar(char char1);
     }
 }
