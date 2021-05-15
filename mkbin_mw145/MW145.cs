@@ -1142,6 +1142,8 @@ namespace mkbin_mw145
                 binaryWriter.Close();
                 binaryWriter = null;
             }
+
+            GC.SuppressFinalize(this);
         }
     }
 }
